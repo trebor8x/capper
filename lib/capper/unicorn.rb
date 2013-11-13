@@ -22,26 +22,40 @@ namespace :unicorn do
     upload_template_file("unicorn.sh",
                          unicorn_script,
                          :mode => "0755")
-    upload_template_file("unicorn.service",
-                         unicorn_service,
-                         :mode => "0755")
-    systemctl "daemon-reload"
-    systemctl :enable, :unicorn
+    if use_systemd
+      upload_template_file("unicorn.service",
+                           unicorn_service,
+                           :mode => "0755")
+      systemctl "daemon-reload"
+      systemctl :enable, :unicorn
+    end
   end
 
   desc "Start unicorn"
   task :start, :roles => :app, :except => { :no_release => true } do
-    systemctl :start, :unicorn
+    if use_systemd
+      systemctl :start, :unicorn
+    else
+      run "#{unicorn_script} start"
+    end
   end
 
   desc "Stop unicorn"
   task :stop, :roles => :app, :except => { :no_release => true } do
-    systemctl :stop, :unicorn
+    if use_systemd
+      systemctl :stop, :unicorn
+    else
+      run "#{unicorn_script} stop"
+    end
   end
 
   desc "Restart unicorn"
   task :restart, :roles => :app, :except => { :no_release => true } do
-    systemctl :restart, :unicorn
+    if use_systemd
+      systemctl :restart, :unicorn
+    else
+      run "#{unicorn_script} upgrade"
+    end
   end
 
   desc "Upgrade unicorn with zero downtime"

@@ -16,33 +16,47 @@ namespace :delayed_job do
     upload_template_file("delayed_job.sh",
                          delayed_job_script,
                          :mode => "0755")
-    upload_template_file("delayed_job@.service",
-                         delayed_job_service,
-                         :mode => "0755")
-    systemctl "daemon-reload"
-    delayed_job_workers.each do |name|
-      systemctl :enable, "delayed_job@#{name}"
+    if use_systemd
+      upload_template_file("delayed_job@.service",
+                           delayed_job_service,
+                           :mode => "0755")
+      systemctl "daemon-reload"
+      delayed_job_workers.each do |name|
+        systemctl :enable, "delayed_job@#{name}"
+      end
     end
   end
 
   desc "Start delayed job workers"
   task :start, :roles => :app, :except => { :no_release => true } do
     delayed_job_workers.each do |name|
-      systemctl :start, "delayed_job@#{name}"
+      if use_systemd
+        systemctl :start, "delayed_job@#{name}"
+      else
+        run "#{delayed_job_script} start #{name}"
+      end
     end
   end
 
   desc "Stop delayed job workers"
   task :stop, :roles => :app, :except => { :no_release => true } do
     delayed_job_workers.each do |name|
-      systemctl :stop, "delayed_job@#{name}"
+      if use_systemd
+        systemctl :stop, "delayed_job@#{name}"
+      else
+        run "#{delayed_job_script} stop #{name}"
+      end
     end
   end
 
   desc "Restart delayed job workers"
   task :restart, :roles => :app, :except => { :no_release => true } do
     delayed_job_workers.each do |name|
-      systemctl :restart, "delayed_job@#{name}"
+      if use_systemd
+        systemctl :restart, "delayed_job@#{name}"
+      else
+        run "#{delayed_job_script} restart #{name}"
+      end
     end
   end
 end

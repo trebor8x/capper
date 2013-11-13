@@ -16,25 +16,40 @@ namespace :thin do
     upload_template_file("thin.sh",
                          thin_script,
                          :mode => "0755")
-    upload_template_file("thin.service",
-                         thin_service,
-                         :mode => "0755")
-    systemctl "daemon-reload"
-    systemctl :enable, :thin
+    if use_systemd
+      upload_template_file("thin.service",
+                           thin_service,
+                           :mode => "0755")
+      systemctl "daemon-reload"
+      systemctl :enable, :thin
+    end
   end
 
   desc "Start thin"
   task :start, :roles => :app, :except => { :no_release => true } do
-    systemctl :start, :thin
+    if use_systemd
+      systemctl :start, :thin
+    else
+      run "#{thin_script} start"
+    end
   end
 
   desc "Stop thin"
   task :stop, :roles => :app, :except => { :no_release => true } do
-    systemctl :stop, :thin
+    if use_systemd
+      systemctl :stop, :thin
+    else
+      run "#{thin_script} stop"
+    end
   end
 
   desc "Restart thin with zero downtime"
   task :restart, :roles => :app, :except => { :no_release => true } do
-    systemctl :restart, :thin
+    if use_systemd
+      systemctl :restart, :thin
+    else
+      run "#{thin_script} kill"
+      run "#{thin_script} start"
+    end
   end
 end

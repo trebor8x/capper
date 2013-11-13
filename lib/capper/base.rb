@@ -32,6 +32,8 @@ _cset(:revision)  { source.head }
 
 _cset(:maintenance_basename, "maintenance")
 
+_cset(:use_systemd, true)
+
 # =========================================================================
 # These variables should NOT be changed unless you are very confident in
 # what you are doing. Make sure you understand all the implications of your

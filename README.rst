@@ -89,6 +89,10 @@ Capper provides integration with a systemd user session running for the user
 that is being deployed to. Capper will upload service units and enable/start
 these accordingly.
 
+If you don't use systemd simply::
+
+  set :use_systemd, false
+
 Recipes
 =======
 
