@@ -121,7 +121,7 @@ declarative in ``config/deploy.rb``::
 
   set :symlinks, {
     "config/database.yml" => "config/database.yml",
-    "shared/uploads" => "public/uploads"
+    "uploads" => "public/uploads"
   }
 
 The above snippet will create symlinks from
